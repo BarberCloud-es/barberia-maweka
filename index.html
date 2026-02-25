@@ -329,6 +329,12 @@ async function loadAll() {
   try {
     DB = await api("getAll");
     if (!DB.config.closedLabels) DB.config.closedLabels = {};
+    // Normalizar fechas y horas en cliente por si el backend devuelve algún valor raro
+    DB.appointments = DB.appointments.map(a => ({
+      ...a,
+      date: normDate(a.date),
+      time: normTime(a.time)
+    }));
   } finally {
     hideLoading();
   }
@@ -411,8 +417,22 @@ function isPast(dateStr,timeStr){
   const iso=normDate(dateStr);
   if(!iso||iso.length<10) return false;
   const [y,mo,d]=iso.split("-").map(Number);
-  const [h,mi]=(timeStr||"00:00").split(":").map(Number);
+  const [h,mi]=(normTime(timeStr)||"00:00").split(":").map(Number);
   return new Date(y,mo-1,d,h||0,mi||0,0)<new Date();
+}
+
+// Normaliza hora: convierte cualquier valor a "HH:MM"
+// El backend ya lo hace, pero por seguridad también en frontend
+function normTime(t){
+  if(!t) return "00:00";
+  const s=String(t).trim();
+  // Ya "HH:MM" o "H:MM"
+  const m=s.match(/^(\d{1,2}):(\d{2})/);
+  if(m) return m[1].padStart(2,"0")+":"+m[2];
+  // Podría ser "Sat Dec 30 1899 17:30:00..." (Date.toString de fracción)
+  const dm=s.match(/(\d{1,2}):(\d{2}):\d{2}/);
+  if(dm) return dm[1].padStart(2,"0")+":"+dm[2];
+  return "00:00";
 }
 
 function statusBadge(st){
@@ -813,7 +833,7 @@ function tabCitas(cont){
   if(CITAS_FILTER==="hoy")     list=list.filter(a=>normDate(a.date)===today);
   if(CITAS_FILTER==="proximas") list=list.filter(a=>!isPast(a.date,a.time));
   if(CITAS_FILTER==="pasadas")  list=list.filter(a=>isPast(a.date,a.time));
-  list=list.sort((a,b)=>(normDate(a.date)+a.time).localeCompare(normDate(b.date)+b.time));
+  list=list.sort((a,b)=>(normDate(a.date)+normTime(a.time)).localeCompare(normDate(b.date)+normTime(b.time)));
 
   const count=DB.appointments.filter(a=>!isPast(a.date,a.time)&&a.status==="pendiente"&&a.status!=="eliminada").length;
   const counter=mk("div","",`<span style="color:var(--muted);font-size:12px;margin-bottom:12px;display:block"><b style="color:var(--gold)">${count}</b> citas próximas pendientes</span>`);
@@ -830,7 +850,7 @@ function tabCitas(cont){
     // Fecha
     const dd=mk("div","apt-date");
     dd.appendChild(mk("div","apt-d",fmtDate(a.date,{day:"2-digit",month:"short"})));
-    dd.appendChild(mk("div","apt-t",a.time));
+    dd.appendChild(mk("div","apt-t",normTime(a.time)));
 
     // Info
     const info=mk("div","apt-info");

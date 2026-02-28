@@ -540,8 +540,12 @@ function getSlots(dateStr){
 function isDayOk(y,m,d){
   const dk=dkey(y,m,d);
   if(dk<todayISO()) return false;
+  // Límite de días máximo
+  const maxDays=DB.config.maxDays||30;
+  const limit=new Date(); limit.setDate(limit.getDate()+maxDays);
+  const limitISO=limit.toISOString().slice(0,10);
+  if(dk>limitISO) return false;
   if(!DB.barbers.length||!DB.services.length) return false;
-  // Al menos un slot disponible que no sea pasado
   return getSlots(dk).some(s=>!s.full&&!isPast(dk,s.time));
 }
 
@@ -602,6 +606,9 @@ function renderClient(){
 
 function stepCal(card){
   card.appendChild(mk("h2","ct","Selecciona una Fecha"));
+  const maxDays=DB.config.maxDays||30;
+  const limitNotice=mk("p","",`<span style="color:#555;font-size:11px;display:block;margin-bottom:10px">📅 Puedes reservar hasta <b style="color:var(--gold)">${maxDays} días</b> de antelación</span>`);
+  card.appendChild(limitNotice);
   const nav=mk("div","cal-nav");
   const prev=mk("button","cal-arr","‹");
   const next=mk("button","cal-arr","›");
@@ -1225,6 +1232,22 @@ function tabAjustes(cont){
   lightBtn.onclick=()=>{ if(DARK_MODE){toggleTheme(); tabAjustes(cont);} };
   themeRow.appendChild(darkBtn); themeRow.appendChild(lightBtn);
   s0.appendChild(themeRow); cont.appendChild(s0);
+
+  // Límite de reservas
+  const sM=mk("div","s-sec"); sM.appendChild(mk("span","s-sec-t","Límite de reservas anticipadas"));
+  const mdRow=mk("div","flex"); mdRow.style.alignItems="center"; mdRow.style.gap="8px";
+  const mdI=document.createElement("input"); mdI.type="number"; mdI.min="1"; mdI.max="365";
+  mdI.value=DB.config.maxDays||30; mdI.style.width="70px";
+  const mdLabel=mk("span","",`<span style="color:var(--muted);font-size:12px">días máximo de antelación</span>`);
+  const mdSave=mk("button","btn-sm","Guardar");
+  mdSave.onclick=()=>{
+    const v=parseInt(mdI.value)||30;
+    act("saveSettings",{maxDays:v},"Guardado ✓");
+  };
+  mdRow.appendChild(mdI); mdRow.appendChild(mdLabel); mdRow.appendChild(mdSave);
+  sM.appendChild(mdRow);
+  sM.appendChild(mk("p","",`<span style="color:#444;font-size:11px;margin-top:5px;display:block">Los clientes no podrán reservar más allá de este número de días. Por defecto: 30 días.</span>`));
+  cont.appendChild(sM);
 
   // Moneda
   const s1=mk("div","s-sec"); s1.appendChild(mk("span","s-sec-t","Moneda"));

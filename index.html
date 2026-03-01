@@ -445,20 +445,13 @@ async function refresh(){
   finally{ setTimeout(()=>btn&&btn.classList.remove("spin"),500); }
 }
 
-let isWriting = false;
-document.addEventListener('focusin', (e) => { if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') isWriting = true; });
-document.addEventListener('focusout', (e) => { isWriting = false; });
-
-function startAutoRefresh() {
-  setInterval(() => {
-    if (!isWriting) {
-      loadData(); // Solo refresca si el usuario no está escribiendo
-    }
-  }, 40000); // 40 segundos para dar más aire
+// Auto-refresh cada 20s para sincronización en tiempo real
+function startAutoRefresh(){
+  clearInterval(AUTO_INTERVAL);
+  AUTO_INTERVAL=setInterval(async()=>{
+    try{ await loadAll(); render(); } catch(e){}
+  },20000);
 }
-// Al final de tu script, inicialo:
-startAutoRefresh();
-  
 function stopAutoRefresh(){ clearInterval(AUTO_INTERVAL); }
 
 // ── UI ──

@@ -446,12 +446,12 @@ async function refresh(){
 }
 
 // Auto-refresh cada 20s para sincronización en tiempo real
-function startAutoRefresh(){
-  clearInterval(AUTO_INTERVAL);
-  AUTO_INTERVAL=setInterval(async()=>{
-    try{ await loadAll(); render(); } catch(e){}
-  },20000);
-}
+//function startAutoRefresh(){
+ // clearInterval(AUTO_INTERVAL);
+ // AUTO_INTERVAL=setInterval(async()=>{
+ //   try{ await loadAll(); render(); } catch(e){}
+ // },20000);
+//}
 function stopAutoRefresh(){ clearInterval(AUTO_INTERVAL); }
 
 // ── UI ──

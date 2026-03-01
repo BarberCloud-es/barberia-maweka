@@ -746,35 +746,28 @@ function stepForm(card){
   card.appendChild(confBtn);
 }
 
-function stepConfirm(app) {
-  const sv = DB.services.find(s => s.id === WZ.svc);
-  const barberName = DB.barbers.find(b => b.id === WZ.barber)?.name || "";
+function stepConfirm(app){
+  const sv=DB.services.find(s=>s.id===WZ.svc);
+  const barberName=DB.barbers.find(b=>b.id===WZ.barber)?.name||"";
+  const box=mk("div","conf pop");
   
-  // URL de acceso directo para imágenes de Google Drive
+  // Enlace directo corregido de tu Drive
   const logoUrl = "https://lh3.googleusercontent.com/d/1m5MurhRLy_kdklvvFfk-iXGMJPWrl3Bp";
-//https://drive.google.com/file/d/1m5MurhRLy_kdklvvFfk-iXGMJPWrl3Bp/view?usp=drive_link
-  const box = mk("div", "conf pop");
-  box.innerHTML = `
-    <div style="text-align:center; margin-bottom:20px;">
-      <img src="${logoUrl}" style="width:120px; height:auto; border-radius:10px;" alt="Logo El Maweka">
-    </div>
-    <div class="conf-title" style="font-family:'Playfair Display',serif; font-size:22px; color:var(--gold); text-align:center; margin-bottom:15px;">
-      Confirmar Cita
-    </div>
-    <div class="conf-details" style="background:var(--bg3); padding:15px; border-radius:8px; border:1px solid var(--border);">
-      <p><strong>Servicio:</strong> ${sv ? sv.name : "No seleccionado"}</p>
-      <p><strong>Barbero:</strong> ${barberName}</p>
-      <p><strong>Fecha:</strong> ${WZ.date}</p>
-      <p><strong>Hora:</strong> ${WZ.time}</p>
-      <p><strong>Precio:</strong> ${sv ? sv.price : ""}${DB.config.currency || "€"}</p>
-    </div>
-    <div style="margin-top:20px; display:flex; gap:10px;">
-      <button class="btn" onclick="confirmBooking()" style="flex:1">Confirmar Reserva</button>
-      <button class="btn btn-outline" onclick="closePop()" style="flex:1">Cancelar</button>
-    </div>
-  `;
+
+  box.innerHTML=`<img src="${logoUrl}">
+  <div class="conf-t">Confirmar Cita</div>
+  <div class="conf-d">
+    <p><b>Servicio:</b> ${sv?sv.name:""}</p>
+    <p><b>Barbero:</b> ${barberName}</p>
+    <p><b>Fecha:</b> ${WZ.date}</p>
+    <p><b>Hora:</b> ${WZ.time}</p>
+    <p><b>Precio:</b> ${sv?sv.price:""}${DB.config.currency||"€"}</p>
+  </div>
+  <div style="margin-top:20px;display:flex;gap:10px">
+    <button class="btn" onclick="confirmBooking()" style="flex:1">Confirmar</button>
+    <button class="btn btn-outline" onclick="closePop()" style="flex:1">Cancelar</button>
+  </div>`;
   
-  // Aquí se asume que 'app' es el contenedor donde se inyecta el modal
   app.appendChild(box);
 }
 
